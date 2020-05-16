@@ -152,27 +152,64 @@ class Board:
 
     # Set Method
     def set_player(self, pos, player):
-        self._board[self._cols_labels.index(pos[0])][int(pos[1:])] = player
+        self._board[int(pos[0])][self._cols_labels.index(pos[0])] = player
 
-    # Get Method
+    # Get Methods
     def get_player(self, pos):
-        row = None
-        col = None
-
+        """Get the player at this position.
+        Args:
+            pos (list): Position of to examine
+        Return:
+            int: Player that occupies the cell.
+        """
         if pos is int:
-            row = pos[0]
-            col = pos[1]
+            col = pos[0]
+            row = pos[1]
         else:
-            row = self._cols_labels.index(pos[0])
-            col = int(pos[1:])
+            col = self._cols_labels.index(pos[0])
+            row = int(pos[1:])
 
-        return self._board[row][col]
+        player = self._board[row][col]
 
-    # def get_position(self, pos):
-    #     row = self._cols_labels.index(pos[0])
-    #     col = int(pos[1:])
-    #
-    #     return [row, col]
+        return player
+
+    def get_position(self, row, col):
+        col_str = self._cols_labels[col]
+        pos = col_str.join(row)
+
+        return pos
+
+    def footprint(self, pos):
+        """Gets the footprint of the center position.
+        Args:
+            pos (str): Position of the center.
+        Returns:
+            list[list[str]]: 2-D array of the footprint
+        """
+
+        square = [['0', '0', '0'],
+                  ['0', '0', '0'],
+                  ['0', '0', '0']]
+
+        row_pos = int(pos[1:]) + 1
+        row_neg = int(pos[1:]) - 1
+
+        col_pos = self._cols_labels.find(pos[0]) + 1
+        col_neg = self._cols_labels.find(pos[0]) - 1
+
+        square[0][0] = self._cols_labels[col_neg].join(str(row_neg))
+        square[0][1] = pos[0].join(str(row_neg))
+        square[0][2] = self._cols_labels[col_pos].join(str(row_neg))
+
+        square[1][0] = self._cols_labels[col_neg].join(str(pos[1:]))
+        square[1][1] = pos
+        square[1][2] = self._cols_labels[col_pos].join(str(pos[1:]))
+
+        square[2][0] = self._cols_labels[col_neg].join(str(row_pos))
+        square[2][1] = pos[0].join(str(row_pos))
+        square[2][2] = self._cols_labels[col_pos].join(str(row_pos))
+
+        return square
 
 
 class GessGame:
@@ -208,6 +245,10 @@ class GessGame:
         else:
             self._player_list.next()
 
+    def _update_game_state(self):
+        """Update the current game state."""
+        pass
+
     def resign_game(self):
         """A method for the current player to resign.
         Raises:
@@ -230,25 +271,41 @@ class GessGame:
             bool: True if the move was valid, False if the move was invalid.
         """
 
+        # Local variables
+        unlimited = 0
+
         # If the game has been won, the turn is invalid
         if self._current_state is (self._game_states[1] or self._game_states[2]):
             return False
         # If the move is oob
         if (piece_pos[0] or future_pos[0] in 'at') or \
-           ((piece_pos[1] or future_pos[1]) == 0 | 20):
+           ((piece_pos[1:] or future_pos[1:]) == 0 | 20):
             return False
 
-        square = [[0, 0, 0],
-                  [0, 0, 0],
-                  [0, 0, 0]]
+        source = self._board.footprint(piece_pos)
 
-        for ind, row in square[:]:
+        for row in source[:]:
             for col in row[:]:
                 # If the current current indexed tile is owned by the opponent, the turn is invalid
-                if self._board.get_player([ind, col]) is not self._turn or 0:
+                if self._board.get_player([col, row]) is not self._turn or 0:
                     return False
+
+                if row and col == 1:
+                    if self._board.get_player([row, col]) is self._turn:
+                        unlimited = 1
+
+        # Create the destination
+        destin = self._board.footprint(future_pos)
+
+        # Place the pieces in the destination
+        for row in destin[:]:
+            for col in row[:]:
+                tile = self._board.get_position(row, col)
                 # Get the owner
-                square[ind][col] = self._board.get_player([ind, col])
+                self._board.set_player(tile, self._turn)
+
+        # Update Game State
+        self._update_game_state()
 
         # Pass the turn
         self._turn = self._next_turn()
