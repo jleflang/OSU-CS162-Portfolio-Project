@@ -15,7 +15,7 @@ class LinkedList:
     def __init__(self):
         self._head = None
 
-    def rec_contains(self, node, val):
+    def _rec_contains(self, node, val):
         """
         A helper method for the contains method
         """
@@ -26,7 +26,7 @@ class LinkedList:
             return True
 
         if node.get_player is not val:
-            return self.rec_contains(node.get_next, val)
+            return self._rec_contains(node.get_next, val)
 
     def contains(self, val):
         """
@@ -39,7 +39,17 @@ class LinkedList:
             return True
 
         if current.get_player is not val:
-            return self.rec_contains(current.get_next, val)
+            return self._rec_contains(current.get_next, val)
+
+    def _rec_add(self, val, cur_node):
+        """"""
+        current = cur_node
+        if current.get_next() is not None:
+            self._rec_add(val, current.get_next())
+        else:
+            new_player = Player(val)
+            current.set_next(val)
+            new_player.get_next()
 
     def add(self, val):
         """
@@ -49,8 +59,8 @@ class LinkedList:
             self._head = Player(val)
         else:
             current = self._head
-            if current.get_next is not None:
-                self.add(current.set_next)
+            if current.get_next() is not None:
+                self._rec_add(val, current.get_next())
 
     def is_empty(self):
         """
@@ -59,7 +69,7 @@ class LinkedList:
         """
         return self._head is None
 
-    def rec_to_regular_list(self, node, result):
+    def _rec_to_regular_list(self, node, result):
         """
         Returns a regular Python list containing the same values, in the same order, as the linked list
         """
@@ -68,7 +78,7 @@ class LinkedList:
 
         if node is not None:
             result += [node.get_player]
-            self.rec_to_regular_list(node.get_next, result)
+            self._rec_to_regular_list(node.get_next, result)
 
     def to_regular_list(self):
         """
@@ -78,8 +88,19 @@ class LinkedList:
         current = self._head
         if current is not None:
             result += [current.get_player]
-            self.rec_to_regular_list(current.get_next, result)
+            self._rec_to_regular_list(current.get_next, result)
         return result
+
+    def next(self):
+        """
+        Returns the next player number as an int
+        """
+        current = self._head
+
+        if current.get_next() is not None:
+            return current.get_next()
+        else:
+            return current.get_player()
 
 
 class Player:
@@ -131,18 +152,31 @@ class Board:
 
     # Set Method
     def set_player(self, pos, player):
-        self._board[pos[0]][pos[1]] = player
+        self._board[self._cols_labels.index(pos[0])][int(pos[1:])] = player
 
     # Get Method
     def get_player(self, pos):
-        col = self._cols_labels.index(pos[0])
-        row = pos[1]
+        row = None
+        col = None
 
-        return self._board[col][row]
+        if pos is int:
+            row = pos[0]
+            col = pos[1]
+        else:
+            row = self._cols_labels.index(pos[0])
+            col = int(pos[1:])
+
+        return self._board[row][col]
+
+    # def get_position(self, pos):
+    #     row = self._cols_labels.index(pos[0])
+    #     col = int(pos[1:])
+    #
+    #     return [row, col]
 
 
 class GessGame:
-
+    """Class that implements the game of Gess."""
     def __init__(self):
         # Set the initial state
         self._board = Board()
@@ -168,17 +202,11 @@ class GessGame:
         """End a turn and hand a turn to the next player.
         Returns:
             int: Player number.
-        Raises:
-            PlayerNotValid: Player is not valid.
         """
         if self._turn is None:
             return self._players[0]
-        elif self._turn == 2:
-            return self._players[0]
-        elif self._turn == 1:
-            return self._players[1]
         else:
-            raise PlayerNotValid
+            self._player_list.next()
 
     def resign_game(self):
         """A method for the current player to resign.
@@ -201,14 +229,26 @@ class GessGame:
         Returns:
             bool: True if the move was valid, False if the move was invalid.
         """
-        # Local variables
 
-        # If the current player does not possess the piece, the turn is invalid
-        if self._turn is not self._board.get_player(piece_pos):
-            return False
         # If the game has been won, the turn is invalid
         if self._current_state is (self._game_states[1] or self._game_states[2]):
             return False
+        # If the move is oob
+        if (piece_pos[0] or future_pos[0] in 'at') or \
+           ((piece_pos[1] or future_pos[1]) == 0 | 20):
+            return False
+
+        square = [[0, 0, 0],
+                  [0, 0, 0],
+                  [0, 0, 0]]
+
+        for ind, row in square[:]:
+            for col in row[:]:
+                # If the current current indexed tile is owned by the opponent, the turn is invalid
+                if self._board.get_player([ind, col]) is not self._turn or 0:
+                    return False
+                # Get the owner
+                square[ind][col] = self._board.get_player([ind, col])
 
         # Pass the turn
         self._turn = self._next_turn()
