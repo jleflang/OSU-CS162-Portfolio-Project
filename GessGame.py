@@ -272,7 +272,12 @@ class GessGame:
         """
 
         # Local variables
-        unlimited = 0
+        # FLAGS = [nw, n,         ne,
+        #          w,  unlimited, e,
+        #          sw, s,         se]
+        flags = [0, 0, 0,
+                 0, 0, 0,
+                 0, 0, 0]
 
         # If the game has been won, the turn is invalid
         if self._current_state is (self._game_states[1] or self._game_states[2]):
@@ -290,9 +295,25 @@ class GessGame:
                 if self._board.get_player([col, row]) is not self._turn or 0:
                     return False
 
-                if row and col == 1:
-                    if self._board.get_player([row, col]) is self._turn:
-                        unlimited = 1
+                if self._board.get_player([row, col]) is self._turn:
+                    if row and col == 0:
+                        flags[0] = 1
+                    elif row and col == 1:
+                        flags[4] = 1
+                    elif row and col == 2:
+                        flags[8] = 1
+                    elif row == 0 and col == 1:
+                        flags[1] = 1
+                    elif row == 0 and col == 2:
+                        flags[2] = 1
+                    elif row == 1 and col == 0:
+                        flags[3] = 1
+                    elif row == 1 and col == 2:
+                        flags[5] = 1
+                    elif row == 2 and col == 0:
+                        flags[6] = 1
+                    elif row == 2 and col == 1:
+                        flags[7] = 1
 
         # Create the destination
         destin = self._board.footprint(future_pos)
