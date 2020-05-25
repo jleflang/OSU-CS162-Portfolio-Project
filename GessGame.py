@@ -9,15 +9,17 @@ class PlayerNotValid(Exception):
 
 
 class LinkedList:
-    """
-    A linked list implementation of the List ADT
-    """
+    """A linked list implementation of the List ADT. Meant to hold Player objects."""
     def __init__(self):
         self._head = None
 
     def _rec_contains(self, node, val):
-        """
-        A helper method for the contains method
+        """A helper method for the contains method.
+        Args:
+            node (Any): Node object.
+            val (int): Value for the node we are looking for.
+        Returns:
+            bool: Whether the desired value is in the list.
         """
         if self.is_empty():
             return False
@@ -29,8 +31,11 @@ class LinkedList:
             return self._rec_contains(node.get_next, val)
 
     def contains(self, val):
-        """
-        Method to determine if this linked list has a particular value
+        """Method to determine if this linked list has a particular value.
+        Args:
+            val (int): The desired value.
+        Returns:
+            bool: Whether the desired value is in the list.
         """
 
         current = self._head
@@ -42,7 +47,11 @@ class LinkedList:
             return self._rec_contains(current.get_next, val)
 
     def _rec_add(self, val, cur_node):
-        """"""
+        """Helper to add to the linked list.
+        Args:
+            val (int): Value to add.
+            cur_node (Any): Current node.
+        """
         current = cur_node
         if current.get_next() is not None:
             self._rec_add(val, current.get_next())
@@ -52,8 +61,9 @@ class LinkedList:
             new_player.get_next()
 
     def add(self, val):
-        """
-        Adds a node containing val to the linked list
+        """Adds a node containing val to the linked list.
+        Args:
+            val (int): Value to add.
         """
         if self._head is None:  # If the list is empty
             self._head = Player(val)
@@ -63,15 +73,19 @@ class LinkedList:
                 self._rec_add(val, current.get_next())
 
     def is_empty(self):
-        """
-        Returns True if the linked list is empty,
-        returns False otherwise
+        """Checks if the linked list is empty.
+        Returns:
+             bool: True if the linked list is empty, returns False otherwise
         """
         return self._head is None
 
     def _rec_to_regular_list(self, node, result):
-        """
-        Returns a regular Python list containing the same values, in the same order, as the linked list
+        """Helper for to_regular_list.
+        Args:
+            node (Any): Current node.
+            result (list[int]): The returned list.
+        Returns:
+            list[int]: The list of nodes.
         """
         if node is None:
             return result
@@ -81,8 +95,9 @@ class LinkedList:
             self._rec_to_regular_list(node.get_next, result)
 
     def to_regular_list(self):
-        """
-        Returns a regular Python list containing the same values, in the same order, as the linked list
+        """Returns a regular Python list containing the same values, in the same order, as the linked list.
+        Returns:
+            list[int]: The list of nodes.
         """
         result = []
         current = self._head
@@ -92,8 +107,9 @@ class LinkedList:
         return result
 
     def next(self):
-        """
-        Returns the next player number as an int
+        """Returns the next player number as an int.
+        Returns:
+            int: Player value.
         """
         current = self._head
 
@@ -104,7 +120,7 @@ class LinkedList:
 
 
 class Player:
-    """A Player object.
+    """A Player object. Meant to be a node in a linked list.
     Args:
         player (int): The player number.
     """
@@ -125,7 +141,8 @@ class Player:
 
 
 class Board:
-    """A Board object."""
+    """A Board object. Sets the initial board state and contains methods to manipulate the board
+        and can identify who possess a given footprint."""
     def __init__(self):
         self._board = [[0 for _ in range(21)],
                        [0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 2, 0, 0],
