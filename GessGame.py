@@ -169,13 +169,18 @@ class Board:
 
     # Set Method
     def set_player(self, pos, player):
+        """Sets the desired position to the player.
+        Args:
+            pos (str): The desired position.
+            player (int): Player value.
+        """
         self._board[int(pos[0])][self._cols_labels.index(pos[0])] = player
 
     # Get Methods
     def get_player(self, pos):
         """Get the player at this position.
         Args:
-            pos (list): Position of to examine
+            pos (Any): Position of to examine
         Return:
             int: Player that occupies the cell.
         """
@@ -191,8 +196,13 @@ class Board:
         return player
 
     def get_position(self, row, col):
+        """Returns the numerical position as a string.
+        Args:
+            row (int): The row number.
+            col (int): The column number.
+        """
         col_str = self._cols_labels[col]
-        pos = col_str.join(row)
+        pos = col_str.join(str(row))
 
         return pos
 
@@ -250,6 +260,7 @@ class GessGame:
 
     # Get Methods
     def get_game_state(self):
+        """Returns the current game state as a string."""
         return self._current_state
 
     def _next_turn(self):
@@ -260,10 +271,11 @@ class GessGame:
         if self._turn is None:
             return self._players[0]
         else:
-            self._player_list.next()
+            return self._player_list.next()
 
     def _update_game_state(self):
         """Update the current game state."""
+        # TODO: Develop the logic that allows for the determination of the game state and actually update it.
         pass
 
     def resign_game(self):
@@ -271,7 +283,6 @@ class GessGame:
         Raises:
             PlayerNotValid: Player is not valid.
         """
-
         if self._turn == 1:
             self._current_state = self._game_states[2]
         elif self._turn == 2:
@@ -296,22 +307,29 @@ class GessGame:
                  0, 0, 0,
                  0, 0, 0]
 
+        # This block of checks evaluates the desired turn and establishes the validity of the turn
         # If the game has been won, the turn is invalid
         if self._current_state is (self._game_states[1] or self._game_states[2]):
             return False
-        # If the move is oob
+        # If the move is Out of Bounds, the turn is invalid
         if (piece_pos[0] or future_pos[0] in 'at') or \
            ((piece_pos[1:] or future_pos[1:]) == 0 | 20):
             return False
+        # If the piece that the player has selected is not theirs, the turn is invalid
+        if self._board.get_player(piece_pos) is not self._turn:
+            return False
 
+        # Establish the current footprint
         source = self._board.footprint(piece_pos)
 
+        # Determine valid move directions
         for row in source[:]:
             for col in row[:]:
                 # If the current current indexed tile is owned by the opponent, the turn is invalid
                 if self._board.get_player([col, row]) is not self._turn or 0:
                     return False
 
+                # Set the appropriate flag for the available moves
                 if self._board.get_player([row, col]) is self._turn:
                     if row and col == 0:
                         flags[0] = 1
@@ -332,15 +350,21 @@ class GessGame:
                     elif row == 2 and col == 1:
                         flags[7] = 1
 
-        # Create the destination
+        # Create the destination footprint
         destin = self._board.footprint(future_pos)
 
+        # TODO: Check whether the destination is a valid move based on the current footprint.
+
         # Place the pieces in the destination
+        # TODO: The get_position method expects a single position,
+        #  need to fix the loop structure to not pass the wrong data
         for row in destin[:]:
             for col in row[:]:
                 tile = self._board.get_position(row, col)
                 # Get the owner
                 self._board.set_player(tile, self._turn)
+
+        # TODO: Need to adequately deal with captures and updating the game state.
 
         # Update Game State
         self._update_game_state()
