@@ -57,7 +57,7 @@ class Board:
         self._cols_labels = 'abcdefghijklmnopgrst'
 
     # Set Method
-    def set_player(self, pos, player):
+    def set_tile(self, pos, player):
         """Sets the desired position to the player.
         Args:
             pos (str): The desired position.
@@ -66,7 +66,7 @@ class Board:
         self._board[int(pos[0])][self._cols_labels.index(pos[0])] = player
 
     # Get Methods
-    def get_player(self, pos):
+    def get_tile(self, pos):
         """Get the player at this position.
         Args:
             pos (Any): Position of to examine
@@ -89,11 +89,33 @@ class Board:
         Args:
             row (int): The row number.
             col (int): The column number.
+        Return:
+            str: Position as a string.
         """
         col_str = self._cols_labels[col]
         pos = col_str.join(str(row))
 
         return pos
+
+    def get_col_range(self, flag, col):
+        """Get a list of the columns that are available to move in.
+        Args:
+            flag (int): 0 is East, 1 is West.
+            col (str): Column string from position string.
+        Return:
+            list[str]: Range in the given direction.
+        """
+        rang = []
+        start = self._cols_labels.index(col)
+
+        # Find each column label in the acceptable range
+        for offset in range(4):
+            if flag is 1:
+                rang.append(self._cols_labels[start + offset])
+            elif flag is -1:
+                rang.append(self._cols_labels[start - offset])
+
+        return rang
 
     def footprint(self, pos):
         """Gets the footprint of the center position.
@@ -190,25 +212,28 @@ class GessGame:
             bool: True if the move was valid, False if the move was invalid.
         """
 
-        # Local variables
-        # FLAGS = [nw, n,         ne,
-        #          w,  unlimited, e,
-        #          sw, s,         se]
-        flags = [0, 0, 0,
-                 0, 0, 0,
-                 0, 0, 0]
+        col_destin = future_pos[0].lower()
+        col_source = piece_pos[0].lower()
 
         # This block of checks evaluates the desired turn and establishes the validity of the turn
         # If the game has been won, the turn is invalid
         if self._current_state is (self._game_states[1] or self._game_states[2]):
             return False
         # If the move is Out of Bounds, the turn is invalid
-        if (piece_pos[0] or future_pos[0] in 'at') or \
-           ((piece_pos[1:] or future_pos[1:]) == 0 | 20):
+        if (col_destin or col_source in 'at') or \
+                ((piece_pos[1:] or future_pos[1:]) == 0 | 20):
             return False
         # If the piece that the player has selected is not theirs, the turn is invalid
-        if self._board.get_player(piece_pos) is not self._turn:
+        if self._board.get_tile(piece_pos) is not self._turn:
             return False
+
+        # FLAGS = [nw, n,         ne,
+        #          w,  unlimited, e,
+        #          sw, s,         se]
+        flags = [0, 0, 0,
+                 0, 0, 0,
+                 0, 0, 0]
+        direction = 0
 
         # Establish the current footprint
         source = self._board.footprint(piece_pos)
@@ -217,11 +242,11 @@ class GessGame:
         for row in source[:]:
             for col in row[:]:
                 # If the current current indexed tile is owned by the opponent, the turn is invalid
-                if self._board.get_player([col, row]) is not self._turn or 0:
+                if self._board.get_tile([col, row]) is not self._turn or 0:
                     return False
 
                 # Set the appropriate flag for the available moves
-                if self._board.get_player([row, col]) is self._turn:
+                if self._board.get_tile([row, col]) is self._turn:
                     if row and col == 0:
                         flags[0] = 1
                     elif row and col == 1:
@@ -241,16 +266,32 @@ class GessGame:
                     elif row == 2 and col == 1:
                         flags[7] = 1
 
+        if col_destin > col_source:
+            direction = 1
+        if col_destin < col_source:
+            direction = -1
+
+        # Check whether the destination is a valid move based on the current footprint.
+        if direction is 0:
+            if int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3)):
+                return False
+        elif direction is -1:
+            if (col_destin not in self._board.get_col_range(0, col_source)) & \
+                    (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
+                return False
+        elif direction is 1:
+            if (col_destin not in self._board.get_col_range(1, col_source)) & \
+                    (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
+                return False
+
         # Create the destination footprint
         destin = self._board.footprint(future_pos)
-
-        # TODO Check whether the destination is a valid move based on the current footprint.
 
         # Place the pieces in the destination
         for row in destin[:]:
             for tile in row[:]:
-                # Get the owner
-                self._board.set_player(tile, self._turn)
+                # Set the tile to the current player
+                self._board.set_tile(tile, self._turn)
 
         # TODO Need to adequately deal with captures and updating the game state.
 
