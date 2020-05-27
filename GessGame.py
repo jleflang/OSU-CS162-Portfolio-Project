@@ -9,24 +9,16 @@ class PlayerNotValid(Exception):
 
 
 class Player:
-    """A Player object. Meant to be a node in a linked list.
+    """A Player object. A simple object for holding a value representing the player.
     Args:
         player (int): The player number.
     """
     def __init__(self, player):
         self._player = player
-        self._next = None
 
     # Get Methods
     def get_player(self):
         return self._player
-
-    def get_next(self):
-        return self._next
-
-    # Set Method
-    def set_next(self, nex):
-        self._next = nex
 
 
 class Board:
@@ -227,51 +219,18 @@ class GessGame:
         if self._board.get_tile(piece_pos) is not self._turn:
             return False
 
-        # FLAGS = [nw, n,         ne,
-        #          w,  unlimited, e,
-        #          sw, s,         se]
-        flags = [0, 0, 0,
-                 0, 0, 0,
-                 0, 0, 0]
+        col_only = None
         direction = 0
 
-        # Establish the current footprint
-        source = self._board.footprint(piece_pos)
-
-        # Determine valid move directions
-        for row in source[:]:
-            for col in row[:]:
-                # If the current current indexed tile is owned by the opponent, the turn is invalid
-                if self._board.get_tile([col, row]) is not self._turn or 0:
-                    return False
-
-                # Set the appropriate flag for the available moves
-                if self._board.get_tile([row, col]) is self._turn:
-                    if row and col == 0:
-                        flags[0] = 1
-                    elif row and col == 1:
-                        flags[4] = 1
-                    elif row and col == 2:
-                        flags[8] = 1
-                    elif row == 0 and col == 1:
-                        flags[1] = 1
-                    elif row == 0 and col == 2:
-                        flags[2] = 1
-                    elif row == 1 and col == 0:
-                        flags[3] = 1
-                    elif row == 1 and col == 2:
-                        flags[5] = 1
-                    elif row == 2 and col == 0:
-                        flags[6] = 1
-                    elif row == 2 and col == 1:
-                        flags[7] = 1
-
+        # Set the direction flag
         if col_destin > col_source:
             direction = 1
-        if col_destin < col_source:
+        elif col_destin < col_source:
             direction = -1
+        elif future_pos[1:] is piece_pos[1:]:
+            col_only = 1
 
-        # Check whether the destination is a valid move based on the current footprint.
+        # Check whether the destination is a valid move based on direction
         if direction is 0:
             if int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3)):
                 return False
@@ -283,6 +242,50 @@ class GessGame:
             if (col_destin not in self._board.get_col_range(1, col_source)) & \
                     (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
                 return False
+        elif col_only is 1:
+            if (col_destin not in self._board.get_col_range(1, col_source)) | \
+               (col_destin not in self._board.get_col_range(0, col_source)):
+                return False
+        else:
+            raise AttributeError
+
+        # FLAGS = [nw, n,         ne,
+        #          w,  unlimited, e,
+        #          sw, s,         se]
+        # flags = [0, 0, 0,
+        #          0, 0, 0,
+        #          0, 0, 0]
+
+        # Establish the current footprint
+        source = self._board.footprint(piece_pos)
+
+        # Determine there are any oppositing pieces making the move invalid
+        for row in source[:]:
+            for col in row[:]:
+                # If the current current indexed tile is owned by the opponent, the turn is invalid
+                if self._board.get_tile([col, row]) is not self._turn or 0:
+                    return False
+
+                # Set the appropriate flag for the available moves
+                # if self._board.get_tile([row, col]) is self._turn:
+                #     if row and col == 0:
+                #         flags[0] = 1
+                #     elif row and col == 1:
+                #         flags[4] = 1
+                #     elif row and col == 2:
+                #         flags[8] = 1
+                #     elif row == 0 and col == 1:
+                #         flags[1] = 1
+                #     elif row == 0 and col == 2:
+                #         flags[2] = 1
+                #     elif row == 1 and col == 0:
+                #         flags[3] = 1
+                #     elif row == 1 and col == 2:
+                #         flags[5] = 1
+                #     elif row == 2 and col == 0:
+                #         flags[6] = 1
+                #     elif row == 2 and col == 1:
+                #         flags[7] = 1
 
         # Create the destination footprint
         destin = self._board.footprint(future_pos)
