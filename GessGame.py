@@ -275,7 +275,7 @@ class GessGame:
 
     def _update_game_state(self):
         """Update the current game state."""
-        # TODO: Develop the logic that allows for the determination of the game state and actually update it.
+        # TODO Develop the logic that allows for the determination of the game state and actually update it.
         pass
 
     def resign_game(self):
@@ -353,18 +353,15 @@ class GessGame:
         # Create the destination footprint
         destin = self._board.footprint(future_pos)
 
-        # TODO: Check whether the destination is a valid move based on the current footprint.
+        # TODO Check whether the destination is a valid move based on the current footprint.
 
         # Place the pieces in the destination
-        # TODO: The get_position method expects a single position,
-        #  need to fix the loop structure to not pass the wrong data
         for row in destin[:]:
-            for col in row[:]:
-                tile = self._board.get_position(row, col)
+            for tile in row[:]:
                 # Get the owner
                 self._board.set_player(tile, self._turn)
 
-        # TODO: Need to adequately deal with captures and updating the game state.
+        # TODO Need to adequately deal with captures and updating the game state.
 
         # Update Game State
         self._update_game_state()
