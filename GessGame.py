@@ -245,15 +245,19 @@ class GessGame:
         # Set the initial state
         self._board = Board()
 
-        self._player_list = LinkedList()
+        self._player_list = list()
 
-        self._player_list.add(1)
-        self._player_list.add(2)
+        self._player_list.append(Player(1))
+        self._player_list.append(Player(2))
 
-        self._players = self._player_list.to_regular_list()
+        # self._players = self._player_list.to_regular_list()
 
         self._game_states = ['UNFINISHED', 'BLACK_WON', 'WHITE_WON']
         self._current_state = self._game_states[0]
+
+        # Set the player default Rings
+        self._player_list[0] = self._board.footprint("l3")
+        self._player_list[1] = self._board.footprint("l18")
 
         # Set first turn
         self._turn = self._next_turn()
@@ -268,10 +272,10 @@ class GessGame:
         Returns:
             int: Player number.
         """
-        if self._turn is None:
-            return self._players[0]
+        if (self._turn is None) | (self._turn is 1):
+            return self._player_list[0]
         else:
-            return self._player_list.next()
+            return self._player_list[1]
 
     def _update_game_state(self):
         """Update the current game state."""
