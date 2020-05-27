@@ -8,115 +8,115 @@ class PlayerNotValid(Exception):
     pass
 
 
-class LinkedList:
-    """A linked list implementation of the List ADT. Meant to hold Player objects."""
-    def __init__(self):
-        self._head = None
-
-    def _rec_contains(self, node, val):
-        """A helper method for the contains method.
-        Args:
-            node (Any): Node object.
-            val (int): Value for the node we are looking for.
-        Returns:
-            bool: Whether the desired value is in the list.
-        """
-        if self.is_empty():
-            return False
-
-        if node.get_player is val:
-            return True
-
-        if node.get_player is not val:
-            return self._rec_contains(node.get_next, val)
-
-    def contains(self, val):
-        """Method to determine if this linked list has a particular value.
-        Args:
-            val (int): The desired value.
-        Returns:
-            bool: Whether the desired value is in the list.
-        """
-
-        current = self._head
-
-        if current.get_player is val:
-            return True
-
-        if current.get_player is not val:
-            return self._rec_contains(current.get_next, val)
-
-    def _rec_add(self, val, cur_node):
-        """Helper to add to the linked list.
-        Args:
-            val (int): Value to add.
-            cur_node (Any): Current node.
-        """
-        current = cur_node
-        if current.get_next() is not None:
-            self._rec_add(val, current.get_next())
-        else:
-            new_player = Player(val)
-            current.set_next(val)
-            new_player.get_next()
-
-    def add(self, val):
-        """Adds a node containing val to the linked list.
-        Args:
-            val (int): Value to add.
-        """
-        if self._head is None:  # If the list is empty
-            self._head = Player(val)
-        else:
-            current = self._head
-            if current.get_next() is not None:
-                self._rec_add(val, current.get_next())
-
-    def is_empty(self):
-        """Checks if the linked list is empty.
-        Returns:
-             bool: True if the linked list is empty, returns False otherwise
-        """
-        return self._head is None
-
-    def _rec_to_regular_list(self, node, result):
-        """Helper for to_regular_list.
-        Args:
-            node (Any): Current node.
-            result (list[int]): The returned list.
-        Returns:
-            list[int]: The list of nodes.
-        """
-        if node is None:
-            return result
-
-        if node is not None:
-            result += [node.get_player]
-            self._rec_to_regular_list(node.get_next, result)
-
-    def to_regular_list(self):
-        """Returns a regular Python list containing the same values, in the same order, as the linked list.
-        Returns:
-            list[int]: The list of nodes.
-        """
-        result = []
-        current = self._head
-        if current is not None:
-            result += [current.get_player]
-            self._rec_to_regular_list(current.get_next, result)
-        return result
-
-    def next(self):
-        """Returns the next player number as an int.
-        Returns:
-            int: Player value.
-        """
-        current = self._head
-
-        if current.get_next() is not None:
-            return current.get_next()
-        else:
-            return current.get_player()
+# class LinkedList:
+#     """A linked list implementation of the List ADT. Meant to hold Player objects."""
+#     def __init__(self):
+#         self._head = None
+#
+#     def _rec_contains(self, node, val):
+#         """A helper method for the contains method.
+#         Args:
+#             node (Any): Node object.
+#             val (int): Value for the node we are looking for.
+#         Returns:
+#             bool: Whether the desired value is in the list.
+#         """
+#         if self.is_empty():
+#             return False
+#
+#         if node.get_player is val:
+#             return True
+#
+#         if node.get_player is not val:
+#             return self._rec_contains(node.get_next, val)
+#
+#     def contains(self, val):
+#         """Method to determine if this linked list has a particular value.
+#         Args:
+#             val (int): The desired value.
+#         Returns:
+#             bool: Whether the desired value is in the list.
+#         """
+#
+#         current = self._head
+#
+#         if current.get_player is val:
+#             return True
+#
+#         if current.get_player is not val:
+#             return self._rec_contains(current.get_next, val)
+#
+#     def _rec_add(self, val, cur_node):
+#         """Helper to add to the linked list.
+#         Args:
+#             val (int): Value to add.
+#             cur_node (Any): Current node.
+#         """
+#         current = cur_node
+#         if current.get_next() is not None:
+#             self._rec_add(val, current.get_next())
+#         else:
+#             new_player = Player(val)
+#             current.set_next(val)
+#             new_player.get_next()
+#
+#     def add(self, val):
+#         """Adds a node containing val to the linked list.
+#         Args:
+#             val (int): Value to add.
+#         """
+#         if self._head is None:  # If the list is empty
+#             self._head = Player(val)
+#         else:
+#             current = self._head
+#             if current.get_next() is not None:
+#                 self._rec_add(val, current.get_next())
+#
+#     def is_empty(self):
+#         """Checks if the linked list is empty.
+#         Returns:
+#              bool: True if the linked list is empty, returns False otherwise
+#         """
+#         return self._head is None
+#
+#     def _rec_to_regular_list(self, node, result):
+#         """Helper for to_regular_list.
+#         Args:
+#             node (Any): Current node.
+#             result (list[int]): The returned list.
+#         Returns:
+#             list[int]: The list of nodes.
+#         """
+#         if node is None:
+#             return result
+#
+#         if node is not None:
+#             result += [node.get_player]
+#             self._rec_to_regular_list(node.get_next, result)
+#
+#     def to_regular_list(self):
+#         """Returns a regular Python list containing the same values, in the same order, as the linked list.
+#         Returns:
+#             list[int]: The list of nodes.
+#         """
+#         result = []
+#         current = self._head
+#         if current is not None:
+#             result += [current.get_player]
+#             self._rec_to_regular_list(current.get_next, result)
+#         return result
+#
+#     def next(self):
+#         """Returns the next player number as an int.
+#         Returns:
+#             int: Player value.
+#         """
+#         current = self._head
+#
+#         if current.get_next() is not None:
+#             return current.get_next()
+#         else:
+#             return current.get_player()
 
 
 class Player:
