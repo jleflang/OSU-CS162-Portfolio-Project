@@ -299,6 +299,7 @@ class GessGame:
         # Place the pieces in the destination
         for row in destin[:]:
             for tile in row[:]:
+                # TODO Deal with captures.
                 # Set the tile to the current player
                 self._board.set_tile(tile, self._turn)
 
