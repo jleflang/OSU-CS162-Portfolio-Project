@@ -174,14 +174,20 @@ class GessGame:
             int: Player number.
         """
         if (self._turn is None) | (self._turn is 1):
-            return self._player_list[0]
+            return self._player_list[0].get_player()
         else:
-            return self._player_list[1]
+            return self._player_list[1].get_player()
 
     def _update_game_state(self):
         """Update the current game state."""
-        # TODO Develop the logic that allows for the determination of the game state and actually update it.
-        pass
+        # If the next player is left without a ring, then the current player has won.
+        nex_player = self._next_turn()
+
+        if self._player_list[nex_player][:] is None:
+            if nex_player is 0:
+                self._current_state = self._game_states[1]
+            else:
+                self._current_state = self._game_states[2]
 
     def resign_game(self):
         """A method for the current player to resign.
