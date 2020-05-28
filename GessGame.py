@@ -255,13 +255,6 @@ class GessGame:
         else:
             raise AttributeError
 
-        # FLAGS = [nw, n,         ne,
-        #          w,  unlimited, e,
-        #          sw, s,         se]
-        # flags = [0, 0, 0,
-        #          0, 0, 0,
-        #          0, 0, 0]
-
         # Establish the current footprint
         source = self._board.footprint(piece_pos)
 
@@ -271,27 +264,6 @@ class GessGame:
                 # If the current current indexed tile is owned by the opponent, the turn is invalid
                 if self._board.get_tile([col, row]) is not self._turn or 0:
                     return False
-
-                # Set the appropriate flag for the available moves
-                # if self._board.get_tile([row, col]) is self._turn:
-                #     if row and col == 0:
-                #         flags[0] = 1
-                #     elif row and col == 1:
-                #         flags[4] = 1
-                #     elif row and col == 2:
-                #         flags[8] = 1
-                #     elif row == 0 and col == 1:
-                #         flags[1] = 1
-                #     elif row == 0 and col == 2:
-                #         flags[2] = 1
-                #     elif row == 1 and col == 0:
-                #         flags[3] = 1
-                #     elif row == 1 and col == 2:
-                #         flags[5] = 1
-                #     elif row == 2 and col == 0:
-                #         flags[6] = 1
-                #     elif row == 2 and col == 1:
-                #         flags[7] = 1
 
         # Create the destination footprint
         destin = self._board.footprint(future_pos)
