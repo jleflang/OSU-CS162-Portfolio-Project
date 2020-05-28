@@ -296,8 +296,6 @@ class GessGame:
                 # Set the tile to the current player
                 self._board.set_tile(tile, self._turn)
 
-        # TODO Need to adequately deal with captures and updating the game state.
-
         # Update Game State
         self._update_game_state()
 
