@@ -296,10 +296,13 @@ class GessGame:
         # Create the destination footprint
         destin = self._board.footprint(future_pos)
 
+        for ring in self._player_list[self._next_turn()]:
+            if source in destin:
+                self._player_list[self._next_turn()].remove(ring)
+
         # Place the pieces in the destination
         for row in destin[:]:
             for tile in row[:]:
-                # TODO Deal with captures.
                 # Set the tile to the current player
                 self._board.set_tile(tile, self._turn)
 
