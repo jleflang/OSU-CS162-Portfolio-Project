@@ -148,20 +148,20 @@ class GessGame:
         # Set the initial state
         self._board = Board()
 
-        self._player_list = list()
+        self._player_list = dict()
 
-        self._player_list.append(Player(1))
-        self._player_list.append(Player(2))
+        p1 = Player(1)
+        p2 = Player(2)
 
         self._game_states = ['UNFINISHED', 'BLACK_WON', 'WHITE_WON']
         self._current_state = self._game_states[0]
 
         # Set the player default Rings
-        self._player_list[0] = {self._board.footprint("l3")}
-        self._player_list[1] = {self._board.footprint("l18")}
+        self._player_list[p1.get_player()] = [self._board.footprint("l3")]
+        self._player_list[p2.get_player()] = [self._board.footprint("l18")]
 
         # Set first turn
-        self._turn = self._next_turn()
+        self._turn = p1.get_player()
 
     # Get Methods
     def get_game_state(self):
@@ -173,10 +173,10 @@ class GessGame:
         Returns:
             int: Player number.
         """
-        if (self._turn is None) | (self._turn is 1):
-            return self._player_list[0].get_player()
+        if self._turn is 2:
+            return self._player_list[1]
         else:
-            return self._player_list[1].get_player()
+            return self._player_list[2]
 
     def _update_game_state(self):
         """Update the current game state."""
@@ -218,8 +218,8 @@ class GessGame:
         if self._current_state is (self._game_states[1] or self._game_states[2]):
             return False
         # If the move is Out of Bounds, the turn is invalid
-        if (col_destin or col_source in 'at') or \
-                ((piece_pos[1:] or future_pos[1:]) == 0 | 20):
+        if (col_destin or col_source is ('a' or 't')) or \
+                ((piece_pos[1:] or future_pos[1:]) is ("0" or "20")):
             return False
         # If the piece that the player has selected is not theirs, the turn is invalid
         if self._board.get_tile(piece_pos) is not self._turn:
@@ -258,7 +258,7 @@ class GessGame:
         # Establish the current footprint
         source = self._board.footprint(piece_pos)
 
-        # Determine there are any oppositing pieces making the move invalid
+        # Determine there are any opposing pieces making the move invalid
         for row in source[:]:
             for col in row[:]:
                 # If the current current indexed tile is owned by the opponent, the turn is invalid
