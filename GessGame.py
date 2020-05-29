@@ -218,8 +218,8 @@ class GessGame:
         if self._current_state is (self._game_states[1] or self._game_states[2]):
             return False
         # If the move is Out of Bounds, the turn is invalid
-        if (col_destin or col_source is ('a' or 't')) or \
-                ((piece_pos[1:] or future_pos[1:]) is ("0" or "20")):
+        if ((col_destin or col_source) is ['a', 't']) or \
+                ((piece_pos[1:] or future_pos[1:]) is ["0", "20"]):
             return False
         # If the piece that the player has selected is not theirs, the turn is invalid
         if self._board.get_tile(piece_pos) is not self._turn:

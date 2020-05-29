@@ -301,3 +301,5 @@ cython_debug/
 .idea/inspectionProfiles/
 .idea/modules.xml
 .idea/vcs.xml
+GameTest.py
+
