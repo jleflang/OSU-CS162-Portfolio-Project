@@ -181,27 +181,32 @@ class GessGame:
     def _update_game_state(self):
         """Update the current game state."""
 
-        # Check if the current player has made a new ring
-        for col in self._board[1:18]:
-            for tile in col[1:18]:
-
-                if self._board.get_tile(tile) is not 0:
-                    continue
-
-                ring = 0
-                check_foot = self._board.footprint(tile)
-
-                for check_col in check_foot[:]:
-                    for check_tile in check_col[:]:
-                        if self._board.get_tile(check_tile) is self._turn:
-                            ring += 1
-
-                if ring == 8:
-                    self._player_list[self._turn].append(check_foot)
-
-        # If the next player is left without a ring, then the current player has won.
+        # Get the next player
         nex_player = self._next_turn()
 
+        # Check if the current player has made a new ring
+        for tile in self._board[1:18][1:18]:
+            # If the cell is occupied, ignore
+            if self._board.get_tile(tile) is not 0:
+                continue
+
+            # Setup the check
+            ring = 0
+            opp_ring = 0
+            check_foot = self._board.footprint(tile)
+
+            # Check to see if a ring is formed
+            for check_col in check_foot[:]:
+                for check_tile in check_col[:]:
+                    if self._board.get_tile(check_tile) is self._turn:
+                        ring += 1
+                    if self._board.get_tile(check_tile) is nex_player:
+                        opp_ring += 1
+
+            if ring == 8:
+                self._player_list[self._turn].append(check_foot)
+
+        # If the next player is left without a ring, then the current player has won.
         if self._player_list[nex_player][:] is None:
             if nex_player is 0:
                 self._current_state = self._game_states[1]
