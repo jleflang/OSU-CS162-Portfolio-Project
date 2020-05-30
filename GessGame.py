@@ -180,6 +180,25 @@ class GessGame:
 
     def _update_game_state(self):
         """Update the current game state."""
+
+        # Check if the current player has made a new ring
+        for col in self._board[1:18]:
+            for tile in col[1:18]:
+
+                if self._board.get_tile(tile) is not 0:
+                    continue
+
+                ring = 0
+                check_foot = self._board.footprint(tile)
+
+                for check_col in check_foot[:]:
+                    for check_tile in check_col[:]:
+                        if self._board.get_tile(check_tile) is self._turn:
+                            ring += 1
+
+                if ring == 8:
+                    self._player_list[self._turn].append(check_foot)
+
         # If the next player is left without a ring, then the current player has won.
         nex_player = self._next_turn()
 
@@ -257,6 +276,11 @@ class GessGame:
 
         # Establish the current footprint
         source = self._board.footprint(piece_pos)
+
+        # If the move leaves the current player without a ring, the move is invalid
+        if (source in self._player_list[self._turn][:]) & \
+                (len(self._player_list[self._turn]) is 0):
+            return False
 
         # Determine there are any pieces making the move invalid
         for row in source[:]:
