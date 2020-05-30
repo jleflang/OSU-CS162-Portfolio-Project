@@ -258,11 +258,11 @@ class GessGame:
         # Establish the current footprint
         source = self._board.footprint(piece_pos)
 
-        # Determine there are any opposing pieces making the move invalid
+        # Determine there are any pieces making the move invalid
         for row in source[:]:
             for col in row[:]:
-                # If the current current indexed tile is owned by the opponent, the turn is invalid
-                if self._board.get_tile([col, row]) is not self._turn or 0:
+                # If the current current indexed tile is blocked, the turn is invalid
+                if self._board.get_tile([col, row]) is not 0:
                     return False
 
         # Create the destination footprint
