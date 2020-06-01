@@ -55,7 +55,7 @@ class Board:
             pos (str): The desired position.
             player (int): Player value.
         """
-        self._board[int(pos[0])][self._cols_labels.index(pos[0])] = player
+        self._board[int(pos[1:])][self._cols_labels.index(pos[0])] = player
 
     # Get Methods
     def get_tile(self, pos):
@@ -85,7 +85,7 @@ class Board:
             str: Position as a string.
         """
         col_str = self._cols_labels[col]
-        pos = col_str.join(str(row))
+        pos = ''.join([col_str, str(row)])
 
         return pos
 
@@ -127,19 +127,31 @@ class Board:
         col_pos = self._cols_labels.find(pos[0]) + 1
         col_neg = self._cols_labels.find(pos[0]) - 1
 
-        square[0][0] = self._cols_labels[col_neg].join(str(row_neg))
-        square[0][1] = pos[0].join(str(row_neg))
-        square[0][2] = self._cols_labels[col_pos].join(str(row_neg))
+        square[0][0] = ''.join([self._cols_labels[col_neg], str(row_neg)])
+        square[0][1] = ''.join([pos[0], str(row_neg)])
+        square[0][2] = ''.join([self._cols_labels[col_pos], str(row_neg)])
 
-        square[1][0] = self._cols_labels[col_neg].join(str(pos[1:]))
+        square[1][0] = ''.join([self._cols_labels[col_neg], str(pos[1:])])
         square[1][1] = pos
-        square[1][2] = self._cols_labels[col_pos].join(str(pos[1:]))
+        square[1][2] = ''.join([self._cols_labels[col_pos], str(pos[1:])])
 
-        square[2][0] = self._cols_labels[col_neg].join(str(row_pos))
-        square[2][1] = pos[0].join(str(row_pos))
-        square[2][2] = self._cols_labels[col_pos].join(str(row_pos))
+        square[2][0] = ''.join([self._cols_labels[col_neg], str(row_pos)])
+        square[2][1] = ''.join([pos[0], str(row_pos)])
+        square[2][2] = ''.join([self._cols_labels[col_pos], str(row_pos)])
 
         return square
+
+    def print_footprint(self, foot):
+        """Display the footprint.
+        Args:
+            foot (list[list[str]]): Footprint
+        """
+
+        print(foot[0][0] + "|" + foot[0][1] + "|" + foot[0][2])
+        print("-----")
+        print(foot[1][0] + "|" + foot[1][1] + "|" + foot[1][2])
+        print("-----")
+        print(foot[2][0] + "|" + foot[2][1] + "|" + foot[2][2])
 
 
 class GessGame:
@@ -160,8 +172,8 @@ class GessGame:
         self._current_state = self._game_states[0]
 
         # Set the player default Rings
-        self._player_list[p1.get_player()] = [self._board.footprint("l3")]
-        self._player_list[p2.get_player()] = [self._board.footprint("l18")]
+        self._player_list[p1.get_player()] = ["l3"]
+        self._player_list[p2.get_player()] = ["l18"]
 
         # Set first turn
         self._turn = p1.get_player()
@@ -188,33 +200,40 @@ class GessGame:
         nex_player = self._next_turn()
 
         # Check if the current player has made a new ring
-        for tile in self._board[1:18][1:18]:
-            # If the cell is occupied, ignore
-            if self._board.get_tile(tile) is not 0:
-                continue
+        for row in range(1, 19):
+            for col in range(1, 19):
+                tile = self._board.get_position(row, col)
+                # If the cell is occupied, ignore
+                if self._board.get_tile(tile) is not 0:
+                    continue
 
-            # Setup the check
-            ring = 0
-            opp_ring = 0
-            check_foot = self._board.footprint(tile)
+                # Setup the check
+                ring = 0
+                opp_ring = 0
+                check_foot = self._board.footprint(tile)
 
-            # Check to see if a ring is formed
-            for check_col in check_foot[:]:
-                for check_tile in check_col[:]:
-                    if self._board.get_tile(check_tile) is self._turn:
-                        ring += 1
-                    if self._board.get_tile(check_tile) is nex_player:
-                        opp_ring += 1
+                # Check to see if a ring is formed
+                for check_col in check_foot[:]:
+                    for check_tile in check_col[:]:
+                        if check_tile is tile:
+                            continue
+                        if self._board.get_tile(check_tile) is self._turn:
+                            ring += 1
+                        if self._board.get_tile(check_tile) is nex_player:
+                            opp_ring += 1
 
-            if ring == 8:
-                self._player_list[self._turn].append(check_foot)
+                if ring == 8:
+                    self._player_list[self._turn].append(tile)
+                if opp_ring == 8:
+                    self._player_list[self._next_turn()].append(tile)
 
         # If the next player is left without a ring, then the current player has won.
-        if self._player_list[nex_player][:] is None:
-            if nex_player is 0:
-                self._current_state = self._game_states[1]
-            else:
-                self._current_state = self._game_states[2]
+
+        # if ring_count is 0:
+        #     if nex_player is 0:
+        #         self._current_state = self._game_states[1]
+        #     else:
+        #         self._current_state = self._game_states[2]
 
     def resign_game(self):
         """A method for the current player to resign.
@@ -264,6 +283,13 @@ class GessGame:
             if self._DEBUG:
                 print("Invalid piece selection")
             return False
+        # If the move leaves the current player without a ring, the move is invalid
+        for tile in self._player_list[self._turn]:
+            ring = self._board.footprint(tile)
+            if piece_pos in ring:
+                if self._DEBUG:
+                    print("You would be without a ring")
+                return False
 
         col_only = None
         direction = 0
@@ -306,18 +332,11 @@ class GessGame:
         # Establish the current footprint
         source = self._board.footprint(piece_pos)
 
-        # If the move leaves the current player without a ring, the move is invalid
-        if (source in self._player_list[self._turn][:]) & \
-                (len(self._player_list[self._turn]) is 0):
-            if self._DEBUG:
-                print("You would be without a ring")
-            return False
-
         # Determine there are any pieces making the move invalid
-        for row in source[:]:
-            for tile in row[:]:
+        for row in source:
+            for tile in row:
                 # If the current current indexed tile is blocked, the turn is invalid
-                if self._board.get_tile(tile) is not self._turn:
+                if self._board.get_tile(tile) == self._next_turn():
                     if self._DEBUG:
                         print("Invalid footprint")
                     return False
@@ -325,13 +344,14 @@ class GessGame:
         # Create the destination footprint
         destin = self._board.footprint(future_pos)
 
-        for ring in self._player_list[self._next_turn()]:
-            if source in destin:
-                self._player_list[self._next_turn()].remove(ring)
-
         # Place the pieces in the destination
-        for row in destin[:]:
-            for tile in row[:]:
+        for row in destin:
+            for tile in row:
+                # If the current current indexed tile is blocked, the turn is invalid
+                if self._board.get_tile(tile) == self._turn:
+                    if self._DEBUG:
+                        print("Invalid Destination")
+                    return False
                 # Capture tiles in the destination
                 if self._board.get_tile(tile) is self._next_turn():
                     self._board.set_tile(tile, self._turn)
