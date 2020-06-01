@@ -289,9 +289,9 @@ class GessGame:
 
         # Determine there are any pieces making the move invalid
         for row in source[:]:
-            for col in row[:]:
+            for tile in row[:]:
                 # If the current current indexed tile is blocked, the turn is invalid
-                if self._board.get_tile([col, row]) is not 0:
+                if self._board.get_tile(tile) is self._turn:
                     return False
 
         # Create the destination footprint
@@ -304,6 +304,9 @@ class GessGame:
         # Place the pieces in the destination
         for row in destin[:]:
             for tile in row[:]:
+                # Capture tiles in the destination
+                if self._board.get_tile(tile) is self._next_turn():
+                    self._board.set_tile(tile, self._turn)
                 # Set the tile to the current player
                 self._board.set_tile(tile, self._turn)
 
