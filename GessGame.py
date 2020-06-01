@@ -236,6 +236,8 @@ class GessGame:
             bool: True if the move was valid, False if the move was invalid.
         """
 
+        print("Turn: " + self._turn.__str__() + ", Piece Selected: " + piece_pos + ", Destination: " + future_pos)
+
         col_destin = future_pos[0].lower()
         col_source = piece_pos[0].lower()
 
