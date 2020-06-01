@@ -145,6 +145,9 @@ class Board:
 class GessGame:
     """Class that implements the game of Gess."""
     def __init__(self):
+        # DEBUG FLAG #
+        self._DEBUG = True
+
         # Set the initial state
         self._board = Board()
 
@@ -219,10 +222,12 @@ class GessGame:
             PlayerNotValid: Player is not valid.
         """
         if self._turn == 1:
-            print("White Resign")
+            if self._DEBUG:
+                print("White Resign")
             self._current_state = self._game_states[2]
         elif self._turn == 2:
-            print("Black Resign")
+            if self._DEBUG:
+                print("Black Resign")
             self._current_state = self._game_states[1]
         else:
             raise PlayerNotValid
@@ -236,7 +241,8 @@ class GessGame:
             bool: True if the move was valid, False if the move was invalid.
         """
 
-        print("Turn: " + self._turn.__str__() + ", Piece Selected: " + piece_pos + ", Destination: " + future_pos)
+        if self._DEBUG:
+            print("Turn: " + self._turn.__str__() + ", Piece Selected: " + piece_pos + ", Destination: " + future_pos)
 
         col_destin = future_pos[0].lower()
         col_source = piece_pos[0].lower()
@@ -244,16 +250,19 @@ class GessGame:
         # This block of checks evaluates the desired turn and establishes the validity of the turn
         # If the game has been won, the turn is invalid
         if self._current_state is (self._game_states[1] or self._game_states[2]):
-            print("Game Finished")
+            if self._DEBUG:
+                print("Game Finished")
             return False
         # If the move is Out of Bounds, the turn is invalid
         if ((col_destin or col_source) is ['a', 't']) or \
                 ((piece_pos[1:] or future_pos[1:]) is ["0", "20"]):
-            print("Move OOB")
+            if self._DEBUG:
+                print("Move OOB")
             return False
         # If the piece that the player has selected is not theirs, the turn is invalid
-        if self._board.get_tile(piece_pos) is not self._turn:
-            print("Invalid piece selection")
+        if self._board.get_tile(piece_pos) is self._next_turn():
+            if self._DEBUG:
+                print("Invalid piece selection")
             return False
 
         col_only = None
@@ -270,22 +279,26 @@ class GessGame:
         # Check whether the destination is a valid move based on direction
         if direction is 0:
             if int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3)):
-                print("Invalid direction")
+                if self._DEBUG:
+                    print("Invalid direction")
                 return False
         elif direction is -1:
             if (col_destin not in self._board.get_col_range(0, col_source)) & \
                     (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
-                print("Invalid direction")
+                if self._DEBUG:
+                    print("Invalid direction")
                 return False
         elif direction is 1:
             if (col_destin not in self._board.get_col_range(1, col_source)) & \
                     (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
-                print("Invalid direction")
+                if self._DEBUG:
+                    print("Invalid direction")
                 return False
         elif col_only is 1:
             if (col_destin not in self._board.get_col_range(1, col_source)) | \
                (col_destin not in self._board.get_col_range(0, col_source)):
-                print("Invalid direction")
+                if self._DEBUG:
+                    print("Invalid direction")
                 return False
         else:
             raise AttributeError
@@ -296,7 +309,8 @@ class GessGame:
         # If the move leaves the current player without a ring, the move is invalid
         if (source in self._player_list[self._turn][:]) & \
                 (len(self._player_list[self._turn]) is 0):
-            print("You would be without a ring")
+            if self._DEBUG:
+                print("You would be without a ring")
             return False
 
         # Determine there are any pieces making the move invalid
@@ -304,7 +318,8 @@ class GessGame:
             for tile in row[:]:
                 # If the current current indexed tile is blocked, the turn is invalid
                 if self._board.get_tile(tile) is not self._turn:
-                    print("Invalid footprint")
+                    if self._DEBUG:
+                        print("Invalid footprint")
                     return False
 
         # Create the destination footprint
