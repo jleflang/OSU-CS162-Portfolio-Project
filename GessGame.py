@@ -172,8 +172,11 @@ class GessGame:
         self._current_state = self._game_states[0]
 
         # Set the player default Rings
-        self._player_list[p1.get_player()] = ["l3"]
-        self._player_list[p2.get_player()] = ["l18"]
+        self._player_list[p1.get_player()] = []
+        self._player_list[p2.get_player()] = []
+
+        self._player_list[p1.get_player()].append("l3")
+        self._player_list[p2.get_player()].append("l18")
 
         # Set first turn
         self._turn = p1.get_player()
@@ -189,9 +192,9 @@ class GessGame:
             int: Player number.
         """
         if self._turn is 2:
-            return self._player_list[1]
+            return 1
         else:
-            return self._player_list[2]
+            return 2
 
     def _update_game_state(self):
         """Update the current game state."""
@@ -228,12 +231,12 @@ class GessGame:
                     self._player_list[self._next_turn()].append(tile)
 
         # If the next player is left without a ring, then the current player has won.
-
-        # if ring_count is 0:
-        #     if nex_player is 0:
-        #         self._current_state = self._game_states[1]
-        #     else:
-        #         self._current_state = self._game_states[2]
+        rings = self._player_list[nex_player].copy()
+        if len(rings) is 0:
+            if nex_player is 0:
+                self._current_state = self._game_states[1]
+            else:
+                self._current_state = self._game_states[2]
 
     def resign_game(self):
         """A method for the current player to resign.
