@@ -361,7 +361,7 @@ class GessGame:
                     return False
 
                 # If the current current indexed tile is blocked, the turn is invalid
-                if self._board.get_tile(destin_tile) == self._turn:
+                if (self._board.get_tile(destin_tile) is self._turn) & (self._board.get_tile(source_tile) is not 0):
                     if self._DEBUG:
                         print("Invalid Destination")
                     return False
