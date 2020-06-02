@@ -158,7 +158,7 @@ class GessGame:
     """Class that implements the game of Gess."""
     def __init__(self):
         # DEBUG FLAG #
-        self._DEBUG = True
+        self._DEBUG = False
 
         # Set the initial state
         self._board = Board()
@@ -245,11 +245,11 @@ class GessGame:
         """
         if self._turn == 1:
             if self._DEBUG:
-                print("White Resign")
+                print("Black Resign")
             self._current_state = self._game_states[2]
         elif self._turn == 2:
             if self._DEBUG:
-                print("Black Resign")
+                print("White Resign")
             self._current_state = self._game_states[1]
         else:
             raise PlayerNotValid
