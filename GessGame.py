@@ -282,7 +282,7 @@ class GessGame:
                 print("Move OOB")
             return False
         # If the piece that the player has selected is not theirs, the turn is invalid
-        if self._board.get_tile(piece_pos) is not self._turn:
+        if self._board.get_tile(piece_pos) is self._next_turn():
             if self._DEBUG:
                 print("Invalid piece selection")
             return False
