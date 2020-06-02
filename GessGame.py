@@ -26,24 +26,24 @@ class Board:
         and can identify who possess a given footprint."""
     def __init__(self):
         self._board = [[0 for _ in range(21)],
-                       [0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 2, 0, 0],
-                       [0, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 0, 2, 0, 2, 0, 2, 2, 2, 0],
-                       [0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 2, 0, 0],
-                       [0 for _ in range(21)],
-                       [0 for _ in range(21)],
-                       [0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0],
-                       [0 for _ in range(21)],
-                       [0 for _ in range(21)],
-                       [0 for _ in range(21)],
-                       [0 for _ in range(21)],
+                       [0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0],
+                       [0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0],
+                       [0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0],
                        [0 for _ in range(21)],
                        [0 for _ in range(21)],
                        [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
                        [0 for _ in range(21)],
                        [0 for _ in range(21)],
-                       [0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0],
-                       [0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0],
-                       [0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0],
+                       [0 for _ in range(21)],
+                       [0 for _ in range(21)],
+                       [0 for _ in range(21)],
+                       [0 for _ in range(21)],
+                       [0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0, 2, 0, 0],
+                       [0 for _ in range(21)],
+                       [0 for _ in range(21)],
+                       [0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 2, 0, 0],
+                       [0, 2, 2, 2, 0, 2, 0, 2, 2, 2, 2, 0, 2, 0, 2, 0, 2, 2, 2, 0],
+                       [0, 0, 2, 0, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 0, 2, 0, 0],
                        [0 for _ in range(21)]]
 
         self._cols_labels = 'abcdefghijklmnopgrst'
@@ -282,19 +282,22 @@ class GessGame:
                 print("Move OOB")
             return False
         # If the piece that the player has selected is not theirs, the turn is invalid
-        if self._board.get_tile(piece_pos) == self._next_turn():
+        if self._board.get_tile(piece_pos) is not self._turn:
             if self._DEBUG:
                 print("Invalid piece selection")
             return False
         # If the move leaves the current player without a ring, the move is invalid
-        for tile in self._player_list[self._turn]:
-            ring = self._board.footprint(tile)
-            if piece_pos in ring:
+        rings = self._player_list[self._turn].copy()
+        for ring in rings:
+            foot = self._board.footprint(ring)
+            if piece_pos in foot:
                 if self._DEBUG:
                     print("You would be without a ring")
                 return False
 
-        col_only = None
+        del rings, foot
+
+        col_only = 0
         direction = 0
 
         # Set the direction flag
@@ -302,7 +305,7 @@ class GessGame:
             direction = 1
         elif col_destin < col_source:
             direction = -1
-        elif future_pos[1:] is piece_pos[1:]:
+        elif col_destin == col_source:
             col_only = 1
 
         # Check whether the destination is a valid move based on direction
@@ -329,37 +332,46 @@ class GessGame:
                 if self._DEBUG:
                     print("Invalid direction")
                 return False
+        elif col_only is 0:
+            if int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3)):
+                if self._DEBUG:
+                    print("Invalid direction")
+                return False
         else:
             raise AttributeError
 
         # Establish the current footprint
         source = self._board.footprint(piece_pos)
 
+        # Create the destination footprint
+        destin = self._board.footprint(future_pos)
+
+        # Make the move
         # Determine there are any pieces making the move invalid
-        for row in source:
-            for tile in row:
+        for row in range(3):
+            for col in range(3):
+
+                source_tile = source[row][col]
+                destin_tile = destin[row][col]
+
                 # If the current current indexed tile is blocked, the turn is invalid
-                if self._board.get_tile(tile) == self._next_turn():
+                if self._board.get_tile(source_tile) is self._next_turn():
                     if self._DEBUG:
                         print("Invalid footprint")
                     return False
 
-        # Create the destination footprint
-        destin = self._board.footprint(future_pos)
-
-        # Place the pieces in the destination
-        for row in destin:
-            for tile in row:
                 # If the current current indexed tile is blocked, the turn is invalid
-                if self._board.get_tile(tile) == self._turn:
+                if self._board.get_tile(destin_tile) == self._turn:
                     if self._DEBUG:
                         print("Invalid Destination")
                     return False
-                # Capture tiles in the destination
-                if self._board.get_tile(tile) is self._next_turn():
-                    self._board.set_tile(tile, self._turn)
+
+                # Remove opponent tiles in the destination
+                if self._board.get_tile(destin_tile) is self._next_turn():
+                    self._board.set_tile(destin_tile, 0)
                 # Set the tile to the current player
-                self._board.set_tile(tile, self._turn)
+                else:
+                    self._board.set_tile(destin_tile, self._turn)
 
         # Update Game State
         self._update_game_state()
