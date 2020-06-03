@@ -165,21 +165,21 @@ class GessGame:
 
         self._player_list = dict()
 
-        p1 = Player(1)
-        p2 = Player(2)
+        self._p1 = Player(1)
+        self._p2 = Player(2)
 
         self._game_states = ['UNFINISHED', 'BLACK_WON', 'WHITE_WON']
         self._current_state = self._game_states[0]
 
         # Set the player default Rings
-        self._player_list[p1.get_player()] = []
-        self._player_list[p2.get_player()] = []
+        self._player_list[self._p1.get_player()] = []
+        self._player_list[self._p2.get_player()] = []
 
-        self._player_list[p1.get_player()].append("l3")
-        self._player_list[p2.get_player()].append("l18")
+        self._player_list[self._p1.get_player()].append("l3")
+        self._player_list[self._p2.get_player()].append("l18")
 
         # Set first turn
-        self._turn = p1.get_player()
+        self._turn = self._p1.get_player()
 
     # Get Methods
     def get_game_state(self):
@@ -268,6 +268,7 @@ class GessGame:
 
         col_destin = future_pos[0].lower()
         col_source = piece_pos[0].lower()
+        nex_player = self._next_turn()
 
         # This block of checks evaluates the desired turn and establishes the validity of the turn
         # If the game has been won, the turn is invalid
@@ -282,7 +283,7 @@ class GessGame:
                 print("Move OOB")
             return False
         # If the piece that the player has selected is not theirs, the turn is invalid
-        if self._board.get_tile(piece_pos) is self._next_turn():
+        if self._board.get_tile(piece_pos) is nex_player:
             if self._DEBUG:
                 print("Invalid piece selection")
             return False
@@ -355,7 +356,7 @@ class GessGame:
                 destin_tile = destin[row][col]
 
                 # If the current current indexed tile is blocked, the turn is invalid
-                if self._board.get_tile(source_tile) is self._next_turn():
+                if self._board.get_tile(source_tile) is nex_player:
                     if self._DEBUG:
                         print("Invalid footprint")
                     return False
@@ -367,7 +368,7 @@ class GessGame:
                     return False
 
                 # Remove opponent tiles in the destination
-                if self._board.get_tile(destin_tile) is self._next_turn():
+                if self._board.get_tile(destin_tile) is nex_player:
                     self._board.set_tile(destin_tile, 0)
                 # Set the tile to the current player
                 else:
@@ -377,6 +378,6 @@ class GessGame:
         self._update_game_state()
 
         # Pass the turn
-        self._turn = self._next_turn()
+        self._turn = nex_player
 
         return True
