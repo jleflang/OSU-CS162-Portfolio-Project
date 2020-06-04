@@ -65,7 +65,7 @@ class Board:
         Return:
             int: Player that occupies the cell.
         """
-        if pos is int:
+        if pos is list([int]):
             col = pos[0]
             row = pos[1]
         else:
@@ -163,13 +163,15 @@ class GessGame:
         # Set the initial state
         self._board = Board()
 
+        # Set Game state
+        self._game_states = ['UNFINISHED', 'BLACK_WON', 'WHITE_WON']
+        self._current_state = self._game_states[0]
+
+        # Establish players
         self._player_list = dict()
 
         self._p1 = Player(1)
         self._p2 = Player(2)
-
-        self._game_states = ['UNFINISHED', 'BLACK_WON', 'WHITE_WON']
-        self._current_state = self._game_states[0]
 
         # Set the player default Rings
         self._player_list[self._p1.get_player()] = []
@@ -191,10 +193,10 @@ class GessGame:
         Returns:
             int: Player number.
         """
-        if self._turn is 2:
-            return 1
+        if self._turn is self._p2.get_player():
+            return self._p1.get_player()
         else:
-            return 2
+            return self._p2.get_player()
 
     def _update_game_state(self):
         """Update the current game state."""
@@ -228,7 +230,9 @@ class GessGame:
                 if ring == 8:
                     self._player_list[self._turn].append(tile)
                 if opp_ring == 8:
-                    self._player_list[self._next_turn()].append(tile)
+                    self._player_list[nex_player].append(tile)
+
+        del check_foot, tile
 
         # If the next player is left without a ring, then the current player has won.
         rings = self._player_list[nex_player].copy()
@@ -237,6 +241,8 @@ class GessGame:
                 self._current_state = self._game_states[1]
             else:
                 self._current_state = self._game_states[2]
+
+        del rings
 
     def resign_game(self):
         """A method for the current player to resign.
@@ -264,7 +270,7 @@ class GessGame:
         """
 
         if self._DEBUG:
-            print("Turn: " + self._turn.__str__() + ", Piece Selected: " + piece_pos + ", Destination: " + future_pos)
+            print("Turn: " + str(self._turn) + ", Piece Selected: " + piece_pos + ", Destination: " + future_pos)
 
         col_destin = future_pos[0].lower()
         col_source = piece_pos[0].lower()
@@ -277,8 +283,7 @@ class GessGame:
                 print("Game Finished")
             return False
         # If the move is Out of Bounds, the turn is invalid
-        if ((col_destin or col_source) is ['a', 't']) or \
-                ((piece_pos[1:] or future_pos[1:]) is ["0", "20"]):
+        if ((col_destin or col_source) is ['a', 't']) or ((piece_pos[1:] or future_pos[1:]) is ["0", "20"]):
             if self._DEBUG:
                 print("Move OOB")
             return False
@@ -295,7 +300,6 @@ class GessGame:
                 if self._DEBUG:
                     print("You would be without a ring")
                 return False
-
         del rings, foot
 
         col_only = 0
@@ -317,13 +321,13 @@ class GessGame:
                 return False
         elif direction is -1:
             if (col_destin not in self._board.get_col_range(0, col_source)) & \
-                    (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
+               (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
                 if self._DEBUG:
                     print("Invalid direction")
                 return False
         elif direction is 1:
             if (col_destin not in self._board.get_col_range(1, col_source)) & \
-                    (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
+               (int(future_pos[1:]) > ((int(piece_pos[1:]) + 3) | (int(piece_pos[1:]) - 3))):
                 if self._DEBUG:
                     print("Invalid direction")
                 return False
@@ -359,12 +363,14 @@ class GessGame:
                 if self._board.get_tile(source_tile) is nex_player:
                     if self._DEBUG:
                         print("Invalid footprint")
+                    del source_tile, destin_tile
                     return False
 
                 # If the current current indexed tile is blocked, the turn is invalid
                 if (self._board.get_tile(destin_tile) is self._turn) & (self._board.get_tile(source_tile) is not 0):
                     if self._DEBUG:
                         print("Invalid Destination")
+                    del source_tile, destin_tile
                     return False
 
                 # Remove opponent tiles in the destination
@@ -373,6 +379,8 @@ class GessGame:
                 # Set the tile to the current player
                 else:
                     self._board.set_tile(destin_tile, self._turn)
+
+        del source_tile, destin_tile
 
         # Update Game State
         self._update_game_state()
